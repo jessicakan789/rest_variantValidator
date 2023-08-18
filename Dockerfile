@@ -1,5 +1,3 @@
-
-# Use an official Python runtime as a parent image
 FROM python:3.10
 
 # Set the working directory to /app
@@ -26,8 +24,11 @@ RUN pip install -r REQUIREMENTS.txt
 # Install the tool
 RUN pip install -e .
 
-# Copy the config file into the container home diorectory
+# Copy the config file into the container home directory
 COPY configuration/docker.ini /root/.variantvalidator
 
-# Start the application with gunicorn
-CMD gunicorn  -b 0.0.0.0:8000 app --threads=5 --chdir ./rest_VariantValidator/
+# Define the entrypoint as an empty command
+ENTRYPOINT []
+
+# Start the container with CMD and set Gunicorn timeout to 600 seconds
+CMD ["gunicorn", "-b", "0.0.0.0:8000", "--timeout", "600", "app", "--threads=5", "--chdir", "./rest_VariantValidator/"]

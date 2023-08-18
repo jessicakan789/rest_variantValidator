@@ -2,12 +2,12 @@
 
 ## Prerequisites
 
-To install rest_variantValidator via Docker, first ensure you have both docker and docker-compose installed. 
+To install rest_variantValidator via Docker, first ensure that you have both docker and docker-compose installed. 
 See their [documentation](https://docs.docker.com/compose/install/) for information.
 
 
 ## Clone the rest_VariantValidator Repository
-Create a directory collate your cloned repositories. Move into the directory then, clone the repository. 
+Create a directory to collate your cloned repositories. Move into the directory, then clone the repository. 
 
 ```bash
 $ git clone https://github.com/openvar/rest_variantValidator
@@ -16,7 +16,7 @@ $ git clone https://github.com/openvar/rest_variantValidator
 Once the repository has been cloned, cd into the rest_variantValidator directory that the clone creates.
 
 ```bash
-$ cd rest_variantValidator/
+$ cd rest_variantValidator
 ``` 
 
 If you have cloned the repository previously, update it prior to installing/re-installing using Docker
@@ -37,18 +37,6 @@ do not update your container for more than 12 months; else leave as `None`. See
 Note: Reconfiguration can be achieved by accessing the docker container through bash. See below for entry and the 
 VariantValidator [manual](https://github.com/openvar/variantValidator/blob/master/docs/MANUAL.md) for details
 
-- Edit the `vdb_docker.df` file 
-
-You need to select your chip set e.g. Arm or Intel and remove the relevant hash. Default is intel
-
-```
-# For Arm chips e.g. Apple M1
-# FROM biarms/mysql:5.7
-
-# For Intel chips
-FROM mysql:5.7
-```
-
 ## Build the container
 
 *Note: some of these steps take >>1hr to complete depending on the speed of your internet connection, particularly 
@@ -64,6 +52,7 @@ $ docker-compose pull
 ```bash
 $ mkdir ~/variantvalidator_data
 $ mkdir ~/variantvalidator_data/share
+$ mkdir ~/variantvalidator_data/share/seqrepo/
 $ mkdir ~/variantvalidator_data/share/logs
 ```
 *i.e.* a directory called `variantvalidator_data/share` in your `home` directory
@@ -73,13 +62,14 @@ $ mkdir ~/variantvalidator_data/share/logs
 ```bash
 $ docker-compose build --no-cache
 ```
-
+ 
 - Complete build
     - The first time you do this, it will complete the build process, for example, populating the required the databases
     - The build takes a while because the  vv databases are large. However, this is a significant improvement on previou
     s versions. Build time is ~30 minutes (depending on the speed of you computer and internet connection)
     - The build has completed when you see the message ***"Use 'docker scan' to run Snyk tests against images to find vulnerabilities and learn how to fix them"***
 
+- Test each container and completes builds if necessary
 ```bash
 # If you have previously installed this software you will need to remove old SeqRepo databases
 $ rm -r -f ~/variantvalidator_data/share/seqrepo/<Previos_SeqRepo_Directory>
@@ -87,23 +77,34 @@ $ rm -r -f ~/variantvalidator_data/share/seqrepo/<Previos_SeqRepo_Directory>
 # Create the vvta container (This takes ~10 minutes to complete)
 $ docker-compose up vvta
 
-# When you see the following message the container has been created. 
+# When you see the following message the container has been created (Can take ~30 min or so). 
 "database system is ready to accept connections"
 
 # Then perforn shut down 
 ctrl + c
 
-# Create the vdb container (This takes a few of minutes) and needs to be created first
+# Create the vdb container (This takes a few minutes)
 $ docker-compose up vdb
 
 # When you see the following message the container has been created. 
-"database system is ready to accept connections"
+" /usr/sbin/mysqld: ready for connections"
 
-# Then perforn shut down 
+# Then perform shut down 
 ctrl + c
 
-# Launch the full application
-$ docker-compose up
+# Create the SeqRepo comtainer
+docker-compose up seqrepo
+
+# This will auto exit once complete and you will see
+"exited with code 0"
+
+# Start the container
+$ docker-compose up -d
+
+# Start the server
+$ docker exec -it rest_variantvalidator-restvv-1 gunicorn  -b 0.0.0.0:8000 --timeout 600 app --threads=5 --chdir ./rest_VariantValidator/
+
+# Now go to Running the app (below) if you have no build errors
 ```
 
 ### Build errors you may encounter
@@ -180,10 +181,14 @@ $ docker-compose down
 $ docker-compose up --force-recreate
 ```
 
-## Accessing and using rest_variantValidator
-Start the container
+## Running the app
+
 ```bash
-$ docker-compose up
+# Start the container
+$ docker-compose up -d
+
+# Start the server
+$ docker exec -it rest_variantvalidator-restvv-1 gunicorn  -b 0.0.0.0:8000 --timeout 600 app --threads=5 --chdir ./rest_VariantValidator/
 ```
 
 In a web browser navigate to
@@ -206,10 +211,10 @@ It is possible to access both the UTA and Validator databases outside of docker 
 ## Accessing VariantValidator directly through bash and reconfiguring a container post build
 The container hosts a full install of VariantValidator. 
 
-To start this version you use the command
+To start this version you start the container in detached mode and access it using
 
 ```bash
-$ docker-compose run restvv bash
+$ docker-compose exec restvv bash
 ```
 
 When you are finished exit the container
@@ -235,10 +240,10 @@ The container has been configured with git installed. This means that you can cl
 
 To develop VariantValidator in the container
 
-Start the container 
+Start the container in detached mode
 
 ```bash
-$ docker-compose run restvv bash
+$ docker-compose exec restvv bash
 ```
 
 ON YOUR COMPUTER change into the share directory
@@ -315,7 +320,7 @@ $ git checkout name_of_branch
 Navigating to the Repo is identical
 
 ```bash
-$ docker-compose run restvv bash
+$ docker-compose exec restvv bash
 $ cd /usr/local/share/DevelopmentRepos/rest_variantValidator
 ```
 
@@ -325,28 +330,27 @@ However, instead of running `pip install -e`, we can test the install using the 
 python rest_variantValidator/app.py
 ```
 
-## Updating rest_variantValidator using docker-compose
+## Updating rest_variantValidator
+To update a container, use
+
+```bash
+$ docker-compose down
+$ docker-compose build <service name> --no-cache
+$ docker-compose up <service name>
+```
+
+## Deleting rest_variantValidator
 Update requires that the restvv container is deleted from your system. This is not achieved by removing the container
 
 If you are only running rest_variantValidator in docker, we recommend deleting and re-building all containers
 
 ```bash
 # Remove the specific containers
-$ docker-compose rm
+$ docker-compose rm <service name e.g. vvta> 
 
 # OR Delete all containers on your system
-$ docker-compose rm
-$ docker system prune -a --volumes
-```
-
-***Once you have deleted the containers, go to Install and Build***
-
-Alternatively, you may wish to try and force the containers to re-build without deleting
-
-```bash
-# Force re-build
 $ docker-compose down
-$ docker-compose up --force-recreate
+$ docker system prune -a --volumes
 ```
 
 ***If you choose this option, make sure you see the container restvv being re-created and all Python packages being 

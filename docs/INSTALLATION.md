@@ -6,24 +6,20 @@ For any other systems, or if you cannot install the databases, we recommend inst
 ## Pre-requisites
 Installation requires [VariantValidator](https://github.com/openvar/variantValidator) and [VariantFormatter](https://github.com/openvar/variantFormatter)
 
-## Installing VariantValidator
+## Installing
 
-When installing  we have found that some of the VariantValidator dependencies do not load well using pip.
-Instead install VariantValidator first using anaconda and the pre-configured environment.yml 
-See the [VariantValidator](https://github.com/openvar/variantValidator) installation documentation
-
-## Download the source code
-
-To download the source code simply clone the master branch.
-
-```
+Download the git repo
+```bash
 $ git clone https://github.com/openvar/rest_variantValidator
 $ cd rest_variantValidator
 ```
 
-## Installing rest_variantValidator
+Create a virtual environment - recommended
+```bash
+$ conda env create -f environment.yml
+$ conda activate vvrest
+```
 
-To install rest_variantValidator within your virtual environment, activate the environment and run:
-```
-$ pip install -e .
-```
+See the [VariantValidator](https://github.com/openvar/variantValidator) installation documentation to install the
+databases and set up configurations. You will need to run the confuguration script if you have not installed this API
+previously. Contact admin if you are having any difficulties

@@ -4,7 +4,8 @@ Simple rest interface for VariantValidator built using Flask Flask-RESTPlus and 
 
 # Import modules
 from flask import Flask, request
-from rest_VariantValidator.endpoints import api, representations, exceptions, request_parser
+from rest_VariantValidator.endpoints import api
+from rest_VariantValidator.utils import exceptions, request_parser, representations
 from logging import handlers
 import time
 import os
@@ -37,10 +38,9 @@ if config['logging'].getboolean('log') is True:
     # This sets the maximum size of the log to 0.5Mb and allows two additional logs
     # The logs are then deleted and replaced in rotation
     try:
-        parent = config['logging']['log_to']
+        parent = config['logging']['file_path']
     except KeyError:
         pass
-
     logHandler = handlers.RotatingFileHandler(str(parent) + '/rest_VariantValidator.log',
                                               maxBytes=500000,
                                               backupCount=2)
@@ -81,10 +81,10 @@ Note
 # Requires the module make_response from flask and dict-to-xml
 
 
-@api.representation('application/xml')
+@api.representation('text/xml')
 def application_xml(data, code, headers):
     resp = representations.xml(data, code, headers)
-    resp.headers['Content-Type'] = 'application/xml'
+    resp.headers['Content-Type'] = 'text/xml'
     return resp
 
 
@@ -118,7 +118,7 @@ def remote_connection_error_handler(e):
 
     # Collect Arguments
     args = parser.parse_args()
-    if args['content-type'] != 'application/xml':
+    if args['content-type'] != 'text/xml':
         return application_json({'message': str(e)},
                                 504,
                                 None)
@@ -135,7 +135,7 @@ def not_found_error_handler(e):
 
     # Collect Arguments
     args = parser.parse_args()
-    if args['content-type'] != 'application/xml':
+    if args['content-type'] != 'text/xml':
         return application_json({'message': 'Requested Endpoint not found'},
                                 404,
                                 None)
@@ -152,7 +152,7 @@ def default_error_handler(e):
 
     # Collect Arguments
     args = parser.parse_args()
-    if args['content-type'] != 'application/xml':
+    if args['content-type'] != 'text/xml':
         return application_json({'message': 'unhandled error: contact https://variantvalidator.org/contact_admin/'},
                                 500,
                                 None)

@@ -1,8 +1,6 @@
 # Import modules
 from flask_restx import Namespace, Resource
-from . import request_parser
-from . import representations
-from . import exceptions
+from rest_VariantValidator.utils import exceptions, request_parser, representations
 
 # Import VariantValidator  code
 import VariantValidator
@@ -18,10 +16,12 @@ api = Namespace('VariantValidator', description='VariantValidator API Endpoints'
 
 @api.route("/variantvalidator/<string:genome_build>/<string:variant_description>/<string:select_transcripts>")
 @api.param("select_transcripts", "***Return all possible transcripts***\n"
-                                 ">   all\n"
+                                 ">   all (at latest version for each transcript)\n"
+                                 ">   raw (all versions of each transcript)\n"
                                  "\n***Return only 'select' transcripts***\n"
                                  ">   select\n"
                                  ">   mane_select\n"
+                                 ">   mane (MANE and MANE Plus Clinical)\n"
                                  ">   refseq_select\n"
                                  "\n***Single***\n"
                                  ">   NM_000093.4\n"
@@ -66,8 +66,8 @@ class VariantValidatorClass(Resource):
         if args['content-type'] == 'application/json':
             # example: http://127.0.0.1:5000.....bob?content-type=application/json
             return representations.application_json(content, 200, None)
-        # example: http://127.0.0.1:5000.....?content-type=application/xml
-        elif args['content-type'] == 'application/xml':
+        # example: http://127.0.0.1:5000.....?content-type=text/xml
+        elif args['content-type'] == 'text/xml':
             return representations.xml(content, 200, None)
         else:
             # Return the api default output
@@ -95,33 +95,49 @@ class Gene2transcriptsClass(Resource):
         if args['content-type'] == 'application/json':
             # example: http://127.0.0.1:5000.....bob?content-type=application/json
             return representations.application_json(content, 200, None)
-        # example: http://127.0.0.1:5000.....?content-type=application/xml
-        elif args['content-type'] == 'application/xml':
+        # example: http://127.0.0.1:5000.....?content-type=text/xml
+        elif args['content-type'] == 'text/xml':
             return representations.xml(content, 200, None)
         else:
             # Return the api default output
             return content
 
 
-@api.route("/tools/gene2transcripts_v2/<string:gene_query>/<string:limit_transcripts>")
+@api.route("/tools/gene2transcripts_v2/<string:gene_query>/<string:limit_transcripts>/<string:transcript_set>/"
+           "<string:genome_build>")
 @api.param("gene_query", "***HGNC gene symbol, HGNC ID or transcript ID***\n"
                          "\nCurrent supported transcript IDs"
-                         "\n- RefSeq")
+                         "\n- RefSeq or Ensembl""\n"
+                                 "\n***Single***\n"
+                                 ">   COL1A1\n"
+                                 "\n***Multiple***\n"
+                                 ">   COL1A1|COL1A2|COL5A1\n")
 @api.param("limit_transcripts",  "***Return all possible transcripts***\n"
                                  ">   False\n"
                                  "\n***Single***\n"
-                                 ">   NM_000093.4\n"
+                                 ">   NM_000088.4\n"
                                  "\n***Multiple***\n"
-                                 ">   NM_000093.4|NM_001278074.1|NM_000093.3")
+                                 ">   NM_000088.4|NM_000088.3\n"
+                                 "\n***Limit to select transcripts***\n"
+                                 ">    mane_select = MANE Select transcript only\n"
+                                 ">    mane = Mane Select and MANE Plus Clinical\n"
+                                 ">    select = All transcripts that have been classified as canonical")
+@api.param("transcript_set", "***RefSeq or Ensembl***\n"
+                             "\nall = all transcripts, refseq = RefSeq only, ensembl = Ensembl only")
+@api.param("genome_build", "***GRCh37 or GRCh38***\n"
+                           "\nall = all builds, GRCh37 = GRCh37 only, GRCh38 = GRCh38 only")
 class Gene2transcriptsV2Class(Resource):
     # Add documentation about the parser
     @api.expect(parser, validate=True)
-    def get(self, gene_query, limit_transcripts):
-
+    def get(self, gene_query, limit_transcripts, transcript_set, genome_build):
+        if genome_build not in ["GRCh37", "GRCh38"]:
+            genome_build = None
         if "False" in limit_transcripts or "false" in limit_transcripts or limit_transcripts is False:
             limit_transcripts = None
         try:
-            content = vval.gene2transcripts(gene_query, select_transcripts=limit_transcripts)
+            content = vval.gene2transcripts(gene_query, select_transcripts=limit_transcripts,
+                                            transcript_set=transcript_set, genome_build=genome_build,
+                                            batch_output=True)
         except ConnectionError:
             message = "Cannot connect to rest.genenames.org, please try again later"
             raise exceptions.RemoteConnectionError(message)
@@ -133,8 +149,8 @@ class Gene2transcriptsV2Class(Resource):
         if args['content-type'] == 'application/json':
             # example: http://127.0.0.1:5000.....bob?content-type=application/json
             return representations.application_json(content, 200, None)
-        # example: http://127.0.0.1:5000.....?content-type=application/xml
-        elif args['content-type'] == 'application/xml':
+        # example: http://127.0.0.1:5000.....?content-type=text/xml
+        elif args['content-type'] == 'text/xml':
             return representations.xml(content, 200, None)
         else:
             # Return the api default output
@@ -160,8 +176,8 @@ class Hgvs2referenceClass(Resource):
         if args['content-type'] == 'application/json':
             # example: http://127.0.0.1:5000.....bob?content-type=application/json
             return representations.application_json(content, 200, None)
-        # example: http://127.0.0.1:5000.....?content-type=application/xml
-        elif args['content-type'] == 'application/xml':
+        # example: http://127.0.0.1:5000.....?content-type=text/xml
+        elif args['content-type'] == 'text/xml':
             return representations.xml(content, 200, None)
         else:
             # Return the api default output
