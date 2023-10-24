@@ -2,6 +2,7 @@
 Simple rest interface for VariantValidator built using Flask Flask-RESTPlus and Swagger UI
 """
 
+
 # Import modules
 from flask import Flask
 from flask_restx import Api, Resource
