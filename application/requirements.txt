@@ -1,5 +1,6 @@
 flask==2.0.0
 flask_restx
-Werkzeug==2.3.0
+Werkzeug==2.3.3
 requests
 dicttoxml
+Flask-RESTful==0.3.9
