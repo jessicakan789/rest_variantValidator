@@ -142,7 +142,7 @@ class VariantValidatorClass(Resource):
     @api.doc(parser=parser)
     def get(self, genome_build, variant_description, select_transcripts):
 
-        # Make a request to the curent VariantValidator rest-API
+        # Make a request to the current VariantValidator rest-API
         url = '/'.join(['http://rest.variantvalidator.org/variantvalidator', genome_build, variant_description, select_transcripts])
 
         # Likely error source, Test be switching off internet connection!
