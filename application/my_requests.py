@@ -19,14 +19,14 @@ class MyRequests:
         return self.request_data()
 
     # method that calls data from the "name" endpoint?
-    def name_endpoint(self, name):
-        url = '/'.join(['http://rest.variantvalidator.org/variantvalidator', name])
-        return requests.get(url)
+    def name_endpoint(self):
+        self.url = f"{self.base_url}name"
+        return self.request_data()
 
     # method that calls data from the "VariantValidator" endpoint?
     def VariantValidator_endpoint(self, genome_build, variant_description, select_transcripts):
-        url = '/'.join(['http://rest.variantvalidator.org/variantvalidator', genome_build, variant_description, select_transcripts])
-        return requests.get(url)
+        self.url = '/'.join([self.base_url, genome_build, variant_description, select_transcripts])
+        return self.request_data()
 
 
 if __name__ == "__main__":
