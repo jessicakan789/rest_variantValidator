@@ -18,7 +18,7 @@ application = Flask(__name__)
 api = Api(app = application)
 
 # Create a RequestParser object to identify specific content-type requests in HTTP URLs
-# The requestparser allows us to specify arguements passed via a URL, in this case, ....?content-type=application/json
+# The requestparser allows us to specify arguments passed via a URL, in this case, ....?content-type=application/json
 parser = reqparse.RequestParser()
 parser.add_argument('content-type',
                     type=str,

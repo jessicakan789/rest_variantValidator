@@ -2,6 +2,6 @@ flask==1.1.4
 flask_restx==1.1.0
 Werkzeug==1.0.1
 requests==2.31.0
-dicttoxml
+dicttoxml==1.7.16
 Flask-RESTful==0.3.9
 markupsafe==2.0.1
