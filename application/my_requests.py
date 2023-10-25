@@ -15,8 +15,7 @@ class MyRequests:
 
     # method that assembles the url to request data from the hello endpoint
     def hello(self):
-        name = "Bob"
-        self.url = "{self.base_url} {0}".format(name)
+        self.url = f"{self.base_url}hello"
         return self.request_data()
 
     # method that calls data from the "name" endpoint?

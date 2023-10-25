@@ -21,7 +21,7 @@ api = Api(app = application)
 Representations
  - Adds a response-type into the "Response content type" drop-down menu displayed in Swagger
  - When selected, the APP will return the correct response-header and content type
- - The default for flask-restplus is aspplication/json
+ - The default for flask-restplus is application/json
 """
 # Add additional representations using the @api.representation decorator
 # Requires the module make_response from flask and json2xml
@@ -48,7 +48,7 @@ name_space = api.namespace('name', description='Return a name provided by the us
 class NameClass(Resource):
     def get(self, name):
         return {
-            "My name is" : name
+            "My name is": name
         }
 
 vv_space = api.namespace('VariantValidator', description='VariantValidator APIs')
@@ -56,7 +56,7 @@ vv_space = api.namespace('VariantValidator', description='VariantValidator APIs'
 class VariantValidatorClass(Resource):
     def get(self, genome_build, variant_description, select_transcripts):
 
-        # Make a request to the curent VariantValidator rest-API
+        # Make a request to the current VariantValidator rest-API
         url = '/'.join(['http://rest.variantvalidator.org/variantvalidator', genome_build, variant_description, select_transcripts])
         validation = requests.get(url)
         content = validation.json()
