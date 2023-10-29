@@ -1,9 +1,7 @@
-from flask_restplus import Namespace, Resource
-from . import request_parser
-from . import representations
+from flask_restx import Namespace, Resource
 import requests
 from requests.exceptions import ConnectionError
-from . import exceptions
+from utils import exceptions, representations, request_parser
 
 """
 Create a parser object locally

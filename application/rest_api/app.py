@@ -4,27 +4,42 @@ Simple rest interface for VariantValidator built using Flask Flask-RESTPlus and 
 
 # Import modules
 from flask import Flask, request
-from endpoints import api, representations, exceptions, request_parser
+from endpoints import api
+from utils import exceptions, representations, request_parser
 import logging
 from logging import handlers
 import time
-
+import sys
 
 """
 Logging
 """
 logger = logging.getLogger('rest_api')
 # We are setting 2 types of logging. To screen at the level DEBUG
-logger.setLevel(logging.INFO)
+logger.setLevel(logging.DEBUG)
+
+# Create a formatter
+formatter = logging.Formatter("%(asctime)s - %(levelname)s - %(message)s")
 
 # We will also log to a file
 # Log with a rotating file-handler. This sets the maximum size of the log to 0.5Mb and allows two additional logs
 # The logs are then deleted and replaced in rotation
 logHandler = handlers.RotatingFileHandler('rest_api.log', maxBytes=500000, backupCount=2)
 # We want to minimise the amount of information we log to capturing bugs
-logHandler.setLevel(logging.ERROR)
+logHandler.setLevel(logging.DEBUG)
 logger.addHandler(logHandler)
 
+# Create a handler for stdout (Error messages)
+stdout_handler = logging.StreamHandler(sys.stdout)
+stdout_handler.setLevel(logging.DEBUG)  # Log debug, error and critical messages to stdout
+stdout_handler.setFormatter(formatter)
+logger.addHandler(stdout_handler)
+
+# Create a handler for stderr (Error and Critical messages)
+stderr_handler = logging.StreamHandler(sys.stderr)
+stderr_handler.setLevel(logging.DEBUG)  # Log debug, error and critical messages to stderr
+stderr_handler.setFormatter(formatter)
+logger.addHandler(stderr_handler)
 
 """
 Create a parser object locally
@@ -57,12 +72,14 @@ Note
 
 @api.representation('text/xml')
 def application_xml(data, code, headers):
+    """Declares XMl response format"""
     resp = representations.xml(data, code, headers)
     return resp
 
 
 @api.representation('application/json')
 def application_json(data, code, headers):
+    """Declares JSON response format"""
     resp = representations.application_json(data, code, headers)
     return resp
 
@@ -85,11 +102,12 @@ def log_exception(exception_type):
 
 @application.errorhandler(exceptions.RemoteConnectionError)
 def remote_connection_error_handler(e):
+    """Log gateway timeout error"""
     # Add the Exception to the log ensuring that exc_info is True so that a traceback is also logged
     log_exception('RemoteConnectionError')
 
     # Collect Arguments
-    args = parser.parse_args()
+    args = parser.parse_args()  # parse arguments
     if args['content-type'] != 'text/xml':
         return application_json({'message': str(e)},
                                 504,
@@ -102,8 +120,9 @@ def remote_connection_error_handler(e):
 
 @application.errorhandler(404)
 def not_found_error_handler():
+    """Log page not found error"""
     # Collect Arguments
-    args = parser.parse_args()
+    args = parser.parse_args()  # parse arguments
     if args['content-type'] != 'text/xml':
         return application_json({'message': 'Requested Endpoint not found'},
                                 404,
@@ -116,11 +135,12 @@ def not_found_error_handler():
 
 @application.errorhandler(500)
 def default_error_handler():
+    """Log internal server error"""
     # Add the Exception to the log ensuring that exc_info is True so that a traceback is also logged
     log_exception('RemoteConnectionError')
 
     # Collect Arguments
-    args = parser.parse_args()
+    args = parser.parse_args()  # parse arguments
     if args['content-type'] != 'text/xml':
         return application_json({'message': 'unhandled error: contact https://variantvalidator.org/contact_admin/'},
                                 500,

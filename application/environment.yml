@@ -1,0 +1,6 @@
+dependencies:
+  - flask
+  - flask-restx
+  - requests
+  - dicttoxml
+  - Flask-RESTful

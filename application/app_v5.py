@@ -4,7 +4,7 @@ Simple rest interface for VariantValidator built using Flask Flask-RESTPlus and 
 
 # Import modules
 from flask import Flask, make_response
-from flask_restplus import Api, Resource, reqparse
+from flask_restx import Api, Resource, reqparse
 import requests
 from dicttoxml import dicttoxml
 
@@ -18,7 +18,7 @@ application = Flask(__name__)
 api = Api(app = application)
 
 # Create a RequestParser object to identify specific content-type requests in HTTP URLs
-# The requestparser allows us to specify arguements passed via a URL, in this case, ....?content-type=application/json
+# The requestparser allows us to specify arguments passed via a URL, in this case, ....?content-type=application/json
 parser = reqparse.RequestParser()
 parser.add_argument('content-type',
                     type=str,
@@ -28,7 +28,7 @@ parser.add_argument('content-type',
 Representations
  - Adds a response-type into the "Response content type" drop-down menu displayed in Swagger
  - When selected, the APP will return the correct response-header and content type
- - The default for flask-restplus is aspplication/json
+ - The default for flask-restplus is application/json
 """
 # Add additional representations using the @api.representation decorator
 # Requires the module make_response from flask and dicttoxml

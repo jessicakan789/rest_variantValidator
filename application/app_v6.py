@@ -1,10 +1,10 @@
 """
-Simple rest interface for VariantVlidator built using Flask Flask-RESTPlus and Swagger UI
+Simple rest interface for VariantValidator built using Flask Flask-RESTPlus and Swagger UI
 """
 
 # Import modules
 from flask import Flask, make_response, request
-from flask_restplus import Api, Resource, reqparse, fields, abort
+from flask_restx import Api, Resource, reqparse, fields, abort
 import requests
 from requests.exceptions import ConnectionError
 from dicttoxml import dicttoxml
@@ -37,7 +37,7 @@ application = Flask(__name__)
 api = Api(app = application)
 
 # Create a RequestParser object to identify specific content-type requests in HTTP URLs
-# The requestparser allows us to specify arguements passed via a URL, in this case, ....?content-type=application/json
+# The requestparser allows us to specify arguments passed via a URL, in this case, ....?content-type=application/json
 parser = reqparse.RequestParser()
 parser.add_argument('content-type',
                     type=str,
@@ -53,7 +53,7 @@ class RemoteConnectionError(Exception):
 Representations
  - Adds a response-type into the "Response content type" drop-down menu displayed in Swagger
  - When selected, the APP will return the correct response-header and content type
- - The default for flask-restplus is aspplication/json
+ - The default for flask-restplus is application/json
 """
 # Add additional representations using the @api.representation decorator
 # Requires the module make_response from flask and dicttoxml
@@ -81,10 +81,10 @@ class HelloClass(Resource):
     @api.doc(parser=parser)
     def get(self):
 
-        # Collect Arguements
+        # Collect Arguments
         args = parser.parse_args()
 
-        # Overides the default response route so that the standard HTML URL can return any specified format
+        # Overrides the default response route so that the standard HTML URL can return any specified format
         if args['content-type'] == 'application/json':
             # example: http://127.0.0.1:5000/name/name/bob?content-type=application/json
             return json({
@@ -112,10 +112,10 @@ class NameClass(Resource):
     @api.doc(parser=parser)
     def get(self, name):
 
-        # Collect Arguements
+        # Collect Arguments
         args = parser.parse_args()
 
-        # Overides the default response route so that the standard HTML URL can return any specified format
+        # Overrides the default response route so that the standard HTML URL can return any specified format
         if args['content-type'] == 'application/json':
             # example: http://127.0.0.1:5000/name/name/bob?content-type=application/json
             return json({
@@ -142,20 +142,20 @@ class VariantValidatorClass(Resource):
     @api.doc(parser=parser)
     def get(self, genome_build, variant_description, select_transcripts):
 
-        # Make a request to the curent VariantValidator rest-API
+        # Make a request to the current VariantValidator rest-API
         url = '/'.join(['http://rest.variantvalidator.org/variantvalidator', genome_build, variant_description, select_transcripts])
 
-        # Likley error source, Test be switching off internet connection!
+        # Likely error source, Test be switching off internet connection!
         try:
             validation = requests.get(url)
         except ConnectionError:
             raise RemoteConnectionError('https://rest.variantvalidator.org/variantvalidator currently unavailable')
         content = validation.json()
 
-        # Collect Arguements
+        # Collect Arguments
         args = parser.parse_args()
 
-        # Overides the default response route so that the standard HTML URL can return any specified format
+        # Overrides the default response route so that the standard HTML URL can return any specified format
         if args['content-type'] == 'application/json':
             # example: http://127.0.0.1:5000.....bob?content-type=application/json
             return json(content, 200, None)
